@@ -3,6 +3,8 @@ package cgs.modloader.timeline;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -16,19 +18,30 @@ import java.util.Map;
 import ru.ius.david.cgs.CFG;
 import ru.ius.david.cgs.cgsGame;
 import ru.ius.david.cgs.elements.ButtonElement;
+import ru.ius.david.cgs.elements.MenuElement;
 import ru.ius.david.cgs.images.Image;
 import ru.ius.david.cgs.images.ImageManager;
 import ru.ius.david.cgs.images.Images;
+import ru.ius.david.cgs.managers.SoundManager;
 import ru.ius.david.cgs.menus.SliderMenu;
 
 public class TimelineViewerScreen extends ScreenAdapter {
     private final cgsGame game;
+    private final Screen previousScreen;
     private final SpriteBatch batch;
     private Matrix4 uiProjection;
     private SliderMenu menuPanel;
     private int currentFrame = 0;
     private boolean isPlaying = true;
     private float playTimer = 0.0f;
+    private InputProcessor previousInputProcessor;
+
+    // Fail-safe button hit zones
+    private int closeTopX, closeTopY, closeTopW, closeTopH;
+    private int closeBotX, closeBotY, closeBotW, closeBotH;
+    private int playBtnX, playBtnY, playBtnW, playBtnH;
+    private int prevBtnX, prevBtnY, prevBtnW, prevBtnH;
+    private int nextBtnX, nextBtnY, nextBtnW, nextBtnH;
 
     private static final Color[] NATION_COLORS = new Color[]{
         new Color(0.2f, 0.7f, 1.0f, 1.0f),
@@ -40,7 +53,12 @@ public class TimelineViewerScreen extends ScreenAdapter {
     };
 
     public TimelineViewerScreen(cgsGame game) {
+        this(game, game != null ? game.getScreen() : null);
+    }
+
+    public TimelineViewerScreen(cgsGame game, Screen previousScreen) {
         this.game = game;
+        this.previousScreen = previousScreen;
         this.batch = game.getSharedBatch();
         updateUIProjection();
         buildUI();
@@ -58,58 +76,234 @@ public class TimelineViewerScreen extends ScreenAdapter {
     private void buildUI() {
         int W = CFG.GAME_WIDTH;
         int H = CFG.GAME_HEIGHT;
-        java.util.ArrayList<ru.ius.david.cgs.elements.MenuElement> elements = new java.util.ArrayList<>();
+        java.util.ArrayList<MenuElement> elements = new java.util.ArrayList<MenuElement>();
 
-        int btnW = CFG.s(150);
+        int btnW = CFG.s(160);
         int btnH = CFG.s(42);
         int y = H - CFG.s(56);
 
         // 1. Play / Pause
-        elements.add(new ButtonElement(CFG.s(30), y, btnW, btnH, isPlaying ? "⏸️ ПАУЗА" : "▶️ ВОСПРОИЗВЕДЕНИЕ", CFG.COLOR_PARCHMENT_BTN_BG, CFG.COLOR_TEXT_DARK, new Runnable() {
+        playBtnX = CFG.s(30);
+        playBtnY = y;
+        playBtnW = btnW;
+        playBtnH = btnH;
+        elements.add(new ButtonElement(playBtnX, playBtnY, playBtnW, playBtnH,
+            isPlaying ? "⏸️ ПАУЗА" : "▶️ ВОСПРОИЗВЕДЕНИЕ", CFG.COLOR_PARCHMENT_BTN_BG, CFG.COLOR_TEXT_DARK, new Runnable() {
             @Override
             public void run() {
-                isPlaying = !isPlaying;
-                buildUI();
+                togglePlayPause();
             }
         }));
 
         // 2. Step Prev
-        elements.add(new ButtonElement(CFG.s(190), y, CFG.s(70), btnH, "◀", CFG.COLOR_PARCHMENT_BTN_BG, CFG.COLOR_TEXT_DARK, new Runnable() {
+        prevBtnX = CFG.s(200);
+        prevBtnY = y;
+        prevBtnW = CFG.s(70);
+        prevBtnH = btnH;
+        elements.add(new ButtonElement(prevBtnX, prevBtnY, prevBtnW, prevBtnH, "◀", CFG.COLOR_PARCHMENT_BTN_BG, CFG.COLOR_TEXT_DARK, new Runnable() {
             @Override
             public void run() {
-                List<TimelineRecorder.Snapshot> snaps = TimelineRecorder.getInstance().getSnapshots();
-                if (!snaps.isEmpty()) {
-                    currentFrame = (currentFrame - 1 + snaps.size()) % snaps.size();
-                }
+                stepPrev();
             }
         }));
 
         // 3. Step Next
-        elements.add(new ButtonElement(CFG.s(266), y, CFG.s(70), btnH, "▶", CFG.COLOR_PARCHMENT_BTN_BG, CFG.COLOR_TEXT_DARK, new Runnable() {
+        nextBtnX = CFG.s(278);
+        nextBtnY = y;
+        nextBtnW = CFG.s(70);
+        nextBtnH = btnH;
+        elements.add(new ButtonElement(nextBtnX, nextBtnY, nextBtnW, nextBtnH, "▶", CFG.COLOR_PARCHMENT_BTN_BG, CFG.COLOR_TEXT_DARK, new Runnable() {
             @Override
             public void run() {
-                List<TimelineRecorder.Snapshot> snaps = TimelineRecorder.getInstance().getSnapshots();
-                if (!snaps.isEmpty()) {
-                    currentFrame = (currentFrame + 1) % snaps.size();
-                }
+                stepNext();
             }
         }));
 
-        // 4. Close
-        elements.add(new ButtonElement(W - btnW - CFG.s(30), y, btnW, btnH, "✖ В ИГРУ", CFG.COLOR_TERTIARY_BTN, Color.WHITE, new Runnable() {
+        // 4. Bottom Close Button: [ ✖ В ИГРУ ]
+        closeBotW = CFG.s(160);
+        closeBotH = btnH;
+        closeBotX = W - closeBotW - CFG.s(30);
+        closeBotY = y;
+        elements.add(new ButtonElement(closeBotX, closeBotY, closeBotW, closeBotH, "✖ В ИГРУ", CFG.COLOR_TERTIARY_BTN, Color.WHITE, new Runnable() {
             @Override
             public void run() {
-                if (game.getActiveMultiplayerManager() != null) {
-                    game.showMultiplayerLobby();
-                } else {
-                    game.showMainMenu();
-                }
+                closeScreen();
+            }
+        }));
+
+        // 5. Top Right Close Button: [ ✖ В ИГРУ ]
+        closeTopW = CFG.s(150);
+        closeTopH = CFG.s(38);
+        closeTopX = W - closeTopW - CFG.s(30);
+        closeTopY = CFG.s(16);
+        elements.add(new ButtonElement(closeTopX, closeTopY, closeTopW, closeTopH, "✖ В ИГРУ", CFG.COLOR_TERTIARY_BTN, Color.WHITE, new Runnable() {
+            @Override
+            public void run() {
+                closeScreen();
             }
         }));
 
         this.menuPanel = new SliderMenu();
         this.menuPanel.initMenu(null, 0, 0, W, H, elements, true, false);
         this.menuPanel.setVisible(true);
+    }
+
+    private void setupInput() {
+        Gdx.input.setCatchKey(Input.Keys.BACK, true);
+        this.previousInputProcessor = Gdx.input.getInputProcessor();
+
+        Gdx.input.setInputProcessor(new InputAdapter() {
+            @Override
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                // Direct fail-safe check for Close buttons (Top or Bottom)
+                if (isHit(screenX, screenY, closeTopX, closeTopY, closeTopW, closeTopH) ||
+                    isHit(screenX, screenY, closeBotX, closeBotY, closeBotW, closeBotH)) {
+                    closeScreen();
+                    return true;
+                }
+
+                // Direct check for Play / Pause
+                if (isHit(screenX, screenY, playBtnX, playBtnY, playBtnW, playBtnH)) {
+                    togglePlayPause();
+                    return true;
+                }
+
+                // Direct check for Prev / Next
+                if (isHit(screenX, screenY, prevBtnX, prevBtnY, prevBtnW, prevBtnH)) {
+                    stepPrev();
+                    return true;
+                }
+                if (isHit(screenX, screenY, nextBtnX, nextBtnY, nextBtnW, nextBtnH)) {
+                    stepNext();
+                    return true;
+                }
+
+                if (menuPanel != null && menuPanel.getVisible()) {
+                    menuPanel.actionPressDown(screenX, screenY);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+                if (menuPanel != null && menuPanel.getVisible()) {
+                    menuPanel.actionPressUp(screenX, screenY);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean mouseMoved(int screenX, int screenY) {
+                if (menuPanel != null && menuPanel.getMenuElements() != null) {
+                    for (MenuElement el : menuPanel.getMenuElements()) {
+                        if (el != null && el.getVisible()) {
+                            boolean inside = isHit(screenX, screenY, el.getPosX(), el.getPosY(), el.getWidth(), el.getHeight());
+                            el.setIsHovered(inside);
+                        }
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK || keycode == Input.Keys.F9) {
+                    closeScreen();
+                    return true;
+                }
+                if (keycode == Input.Keys.SPACE) {
+                    togglePlayPause();
+                    return true;
+                }
+                if (keycode == Input.Keys.LEFT) {
+                    stepPrev();
+                    return true;
+                }
+                if (keycode == Input.Keys.RIGHT) {
+                    stepNext();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+
+    private boolean isHit(int x, int y, int bx, int by, int bw, int bh) {
+        return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+    }
+
+    private void togglePlayPause() {
+        try {
+            SoundManager.getInstance().play(SoundManager.SFX.BUTTON_CLICK);
+        } catch (Throwable ignored) {}
+        isPlaying = !isPlaying;
+        buildUI();
+    }
+
+    private void stepPrev() {
+        try {
+            SoundManager.getInstance().play(SoundManager.SFX.BUTTON_CLICK);
+        } catch (Throwable ignored) {}
+        List<TimelineRecorder.Snapshot> snaps = TimelineRecorder.getInstance().getSnapshots();
+        if (!snaps.isEmpty()) {
+            currentFrame = (currentFrame - 1 + snaps.size()) % snaps.size();
+        }
+    }
+
+    private void stepNext() {
+        try {
+            SoundManager.getInstance().play(SoundManager.SFX.BUTTON_CLICK);
+        } catch (Throwable ignored) {}
+        List<TimelineRecorder.Snapshot> snaps = TimelineRecorder.getInstance().getSnapshots();
+        if (!snaps.isEmpty()) {
+            currentFrame = (currentFrame + 1) % snaps.size();
+        }
+    }
+
+    public void closeScreen() {
+        try {
+            SoundManager.getInstance().play(SoundManager.SFX.BUTTON_CLICK);
+        } catch (Throwable ignored) {}
+
+        if (game == null) return;
+
+        try {
+            if (previousScreen != null && previousScreen != this) {
+                game.setScreen(previousScreen);
+                return;
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+        try {
+            if (game.getActiveMultiplayerManager() != null) {
+                game.showMultiplayerLobby();
+            } else {
+                game.showMainMenu();
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    @Override
+    public void show() {
+        setupInput();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        updateUIProjection();
+        buildUI();
+        setupInput();
+    }
+
+    @Override
+    public void hide() {
+        if (previousInputProcessor != null && Gdx.input.getInputProcessor() != previousInputProcessor) {
+            Gdx.input.setInputProcessor(previousInputProcessor);
+        }
     }
 
     @Override
@@ -134,7 +328,7 @@ public class TimelineViewerScreen extends ScreenAdapter {
 
         // Title Header
         if (CFG.fontMain != null) {
-            String title = "📈 ХРОНИКА МАТЧА & ИТОГОВЫЕ ГРАФИКИ (POST-GAME TIMELINE)";
+            String title = "📈 ХРОНИКА МАТЧА & ИТОГОВЫЕ ГРАФИКИ";
             CFG.drawText(this.batch, title, CFG.s(30), CFG.s(36), new Color(0.35f, 0.88f, 1.0f, 1.0f));
         }
 
@@ -269,6 +463,7 @@ public class TimelineViewerScreen extends ScreenAdapter {
         }
 
         if (this.menuPanel != null) {
+            this.menuPanel.updateElements(delta);
             this.menuPanel.draw(this.batch);
         }
 
