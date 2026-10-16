@@ -404,14 +404,20 @@ public class ModLoader {
             cgs.modloader.save.MultiplayerSaveManager.getInstance().saveMatch(this.gameInstance, mpMgr);
         }
 
-        // 4. F7 Direct Aid / Lend-Lease Dialog toggle
-        if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F7)) {
+        // 4. F7 Direct Aid / Lend-Lease Dialog toggle (gameplay only)
+        if (mapScreen != null && com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F7)) {
             cgs.modloader.trade.DirectAidDialog.getInstance().toggle();
         }
 
-        // 5. Direct Aid Dialog render
-        if (cgs.modloader.trade.DirectAidDialog.getInstance().isVisible()) {
+        // 5. Direct Aid Dialog render & click handling (gameplay only)
+        if (mapScreen != null && cgs.modloader.trade.DirectAidDialog.getInstance().isVisible()) {
             ru.ius.david.cgs.game.GameManager gm = ru.ius.david.cgs.game.GameManager.getInstance();
+            ru.ius.david.cgs.multiplayer.MultiplayerManager mpMgr = this.gameInstance != null ? this.gameInstance.getActiveMultiplayerManager() : null;
+            if (com.badlogic.gdx.Gdx.input.isButtonJustPressed(com.badlogic.gdx.Input.Buttons.LEFT)) {
+                float mx = com.badlogic.gdx.Gdx.input.getX();
+                float my = com.badlogic.gdx.Gdx.input.getY();
+                cgs.modloader.trade.DirectAidDialog.getInstance().handleClick(mx, my, ru.ius.david.cgs.CFG.GAME_WIDTH, ru.ius.david.cgs.CFG.GAME_HEIGHT, gm, mpMgr);
+            }
             cgs.modloader.trade.DirectAidDialog.getInstance().render(
                 batch, null, ru.ius.david.cgs.CFG.fontMain, ru.ius.david.cgs.CFG.GAME_WIDTH, ru.ius.david.cgs.CFG.GAME_HEIGHT, gm
             );

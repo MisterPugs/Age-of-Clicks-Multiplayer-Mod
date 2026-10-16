@@ -69,8 +69,8 @@ public class MultiplayerChat implements InputProcessor {
     private int closeBtnX, closeBtnY, closeBtnW, closeBtnH;
     private int channelBtnX, channelBtnY, channelBtnW, channelBtnH;
     private int clearBtnX, clearBtnY, clearBtnW, clearBtnH;
-    private int chatBoxX, chatBoxY, chatBoxW, chatBoxH;
-    private int miniChatBtnX, miniChatBtnY, miniChatBtnW, miniChatBtnH;
+    private int chatBoxX = -1000, chatBoxY = -1000, chatBoxW = -1, chatBoxH = -1;
+    private int miniChatBtnX = -1000, miniChatBtnY = -1000, miniChatBtnW = -1, miniChatBtnH = -1;
 
     private static final Color CHAT_BG = new Color(0.02f, 0.04f, 0.08f, 0.92f);
     private static final Color CHAT_INPUT_BG = new Color(0.05f, 0.09f, 0.16f, 0.98f);
@@ -570,7 +570,7 @@ public class MultiplayerChat implements InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (!isChatActive) {
             // Click on mini chat trigger pill in bottom-left
-            if (screenX >= miniChatBtnX && screenX <= miniChatBtnX + miniChatBtnW &&
+            if (miniChatBtnW > 0 && screenX >= miniChatBtnX && screenX <= miniChatBtnX + miniChatBtnW &&
                 screenY >= miniChatBtnY && screenY <= miniChatBtnY + miniChatBtnH) {
                 isChatActive = true;
                 inputBuffer.setLength(0);
@@ -629,11 +629,11 @@ public class MultiplayerChat implements InputProcessor {
     @Override
     public boolean keyUp(int keycode) { return isChatActive; }
     @Override
-    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) { return isChatActive; }
+    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) { return false; }
     @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) { return isChatActive; }
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) { return false; }
     @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) { return isChatActive; }
+    public boolean touchDragged(int screenX, int screenY, int pointer) { return false; }
     @Override
     public boolean mouseMoved(int screenX, int screenY) { return false; }
     @Override

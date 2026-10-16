@@ -99,8 +99,14 @@ public class DirectAidDialog implements InputProcessor {
         return result;
     }
 
+    private long lastClickTime = 0;
+
     public boolean handleClick(float mouseX, float mouseY, float screenWidth, float screenHeight, GameManager gm, MultiplayerManager mpMgr) {
         if (!visible || gm == null) return false;
+
+        long now = System.currentTimeMillis();
+        if (now - lastClickTime < 90) return true;
+        lastClickTime = now;
 
         float w = 720;
         float h = 530;
@@ -355,11 +361,8 @@ public class DirectAidDialog implements InputProcessor {
         openAnim = Math.min(1.0f, openAnim + delta * 5.0f);
         float ease = 1.0f - (float)Math.pow(1.0f - openAnim, 3);
 
-        float baseW = 720;
-        float baseH = 530;
-        float scale = 0.92f + 0.08f * ease;
-        float w = baseW * scale;
-        float h = baseH * scale;
+        float w = 720;
+        float h = 530;
         float x = (screenWidth - w) / 2.0f;
         float y = (screenHeight - h) / 2.0f;
 
@@ -801,7 +804,7 @@ public class DirectAidDialog implements InputProcessor {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        return visible;
+        return false;
     }
 
     @Override

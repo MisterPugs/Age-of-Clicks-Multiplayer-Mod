@@ -89,8 +89,14 @@ public class ScenarioSelectDialog implements InputProcessor {
         return list;
     }
 
+    private long lastClickTime = 0;
+
     public boolean handleClick(float mouseX, float mouseY, float screenWidth, float screenHeight) {
         if (!visible) return false;
+
+        long now = System.currentTimeMillis();
+        if (now - lastClickTime < 90) return true;
+        lastClickTime = now;
 
         float w = 780;
         float h = 540;
@@ -212,11 +218,12 @@ public class ScenarioSelectDialog implements InputProcessor {
         openAnim = Math.min(1.0f, openAnim + delta * 5.0f);
         float ease = 1.0f - (float)Math.pow(1.0f - openAnim, 3);
 
-        float baseW = 780;
-        float baseH = 540;
-        float scale = 0.92f + 0.08f * ease;
-        float w = baseW * scale;
-        float h = baseH * scale;
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            handleClick(Gdx.input.getX(), Gdx.input.getY(), screenWidth, screenHeight);
+        }
+
+        float w = 780;
+        float h = 540;
         float x = (screenWidth - w) / 2.0f;
         float y = (screenHeight - h) / 2.0f;
 
@@ -482,7 +489,7 @@ public class ScenarioSelectDialog implements InputProcessor {
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) { return visible; }
     @Override
-    public boolean mouseMoved(int screenX, int screenY) { return visible; }
+    public boolean mouseMoved(int screenX, int screenY) { return false; }
     @Override
     public boolean scrolled(float amountX, float amountY) { return visible; }
 }

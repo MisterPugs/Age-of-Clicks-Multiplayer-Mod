@@ -65,9 +65,11 @@ public class MultiplayerMod implements IMod {
 
     @Override
     public void onRenderOverlay(SpriteBatch batch, float delta) {
-
-        // Live chat, tactical pings and scoreboard
-        cgs.mods.multiplayer.chat.MultiplayerChat.getInstance().render(batch, delta, game);
+        // Live chat, tactical pings and scoreboard only during gameplay (MapScreen)
+        com.badlogic.gdx.Screen curScreen = game != null ? game.getScreen() : null;
+        if (curScreen instanceof ru.ius.david.cgs.MapScreen) {
+            cgs.mods.multiplayer.chat.MultiplayerChat.getInstance().render(batch, delta, game);
+        }
 
         GameManager gm = GameManager.getInstance();
         if (gm == null || !gm.isNetworkMode()) {
