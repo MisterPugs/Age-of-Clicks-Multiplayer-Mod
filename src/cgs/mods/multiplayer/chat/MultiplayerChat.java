@@ -238,7 +238,7 @@ public class MultiplayerChat implements InputProcessor {
     private void renderChat(SpriteBatch batch) {
         int x = CFG.s(14);
         int chatW = Math.min(CFG.s(480), CFG.GAME_WIDTH - CFG.s(28));
-        int lineH = CFG.s(20);
+        int lineH = CFG.s(22);
         int maxVisible = 8;
 
         float mouseX = Gdx.input.getX();
@@ -255,7 +255,7 @@ public class MultiplayerChat implements InputProcessor {
         }
         Collections.reverse(visibleList);
 
-        int totalH = visibleList.size() * lineH + (isChatActive ? CFG.s(68) : 0) + CFG.s(8);
+        int totalH = visibleList.size() * lineH + (isChatActive ? CFG.s(76) : CFG.s(12));
         int y = CFG.GAME_HEIGHT - CFG.s(180) - totalH;
 
         this.chatBoxX = x;
@@ -274,29 +274,30 @@ public class MultiplayerChat implements InputProcessor {
             }
             batch.setColor(Color.WHITE);
 
-            int textY = y + CFG.s(8);
+            int textY = y + CFG.s(6);
             for (ChatEntry ce : visibleList) {
                 if (CFG.fontSmall != null) {
                     float alpha = isChatActive ? 1.0f : Math.min(1.0f, ce.life);
                     Color senderCol = ce.sender.startsWith("📍") ? COLOR_PING_ALERT :
-                                      ce.sender.equals("СИСТЕМА") ? new Color(0.9f, 0.75f, 0.2f, alpha) :
+                                      ce.sender.equals("СИСТЕМА") ? new Color(0.95f, 0.8f, 0.2f, alpha) :
                                       new Color(0.35f, 0.85f, 1.0f, alpha);
 
                     String prefix = (ce.teamOnly ? "[СОЮЗ] " : "") + ce.sender + ": ";
-                    CFG.drawTextSmall(batch, prefix, x + CFG.s(8), textY + CFG.s(14), senderCol);
+                    int drawY = CFG.textTopCentered(CFG.fontSmall, textY, lineH);
+                    CFG.drawTextSmall(batch, prefix, x + CFG.s(8), drawY, senderCol);
 
                     CFG.glyphLayout.setText(CFG.fontSmall, prefix);
                     int pw = (int)CFG.glyphLayout.width;
 
-                    Color msgCol = new Color(0.9f, 0.92f, 0.96f, alpha);
-                    CFG.drawTextSmall(batch, ce.text, x + CFG.s(8) + pw, textY + CFG.s(14), msgCol);
+                    Color msgCol = new Color(0.92f, 0.94f, 0.98f, alpha);
+                    CFG.drawTextSmall(batch, ce.text, x + CFG.s(8) + pw, drawY, msgCol);
                 }
                 textY += lineH;
             }
 
             // Draw interactive input box & action buttons if typing
             if (isChatActive) {
-                int inputY = textY + CFG.s(4);
+                int inputY = textY + CFG.s(6);
                 int inputH = CFG.s(28);
 
                 // Row 1 of Input Area: Text Input field
@@ -307,16 +308,17 @@ public class MultiplayerChat implements InputProcessor {
                 drawOutline(batch, x + CFG.s(4), inputY, chatW - CFG.s(8), inputH, 1);
 
                 String channelPrompt = teamChatMode ? "[СОЮЗ] " : "[ОБЩИЙ] ";
-                CFG.drawTextSmall(batch, channelPrompt, x + CFG.s(10), inputY + CFG.s(19), teamChatMode ? Color.CYAN : Color.WHITE);
+                int inputDrawY = CFG.textTopCentered(CFG.fontSmall, inputY, inputH);
+                CFG.drawTextSmall(batch, channelPrompt, x + CFG.s(10), inputDrawY, teamChatMode ? Color.CYAN : Color.WHITE);
 
                 CFG.glyphLayout.setText(CFG.fontSmall, channelPrompt);
                 int cpw = (int)CFG.glyphLayout.width;
 
                 String displayInput = inputBuffer.toString() + ((System.currentTimeMillis() / 450) % 2 == 0 ? "_" : "");
-                CFG.drawTextSmall(batch, displayInput, x + CFG.s(10) + cpw, inputY + CFG.s(19), Color.WHITE);
+                CFG.drawTextSmall(batch, displayInput, x + CFG.s(10) + cpw, inputDrawY, Color.WHITE);
 
                 // Row 2 of Input Area: Interactive Clickable Buttons
-                int btnRowY = inputY + inputH + CFG.s(4);
+                int btnRowY = inputY + inputH + CFG.s(6);
                 int btnH = CFG.s(24);
 
                 // 1. Channel Toggle Button [ 🌐 ОБЩИЙ / 🤝 СОЮЗ ]

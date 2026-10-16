@@ -2017,6 +2017,20 @@ extends ScreenAdapter {
         this.themeReveal.draw(this.batch);
         this.batch.setColor(Color.WHITE);
         cgs.modloader.update.ModUpdateChecker.getInstance().renderBanner(this.batch, null, CFG.fontMain, delta, W, H);
+
+        // Watermark: multiplayer by Napbon (Bottom-Right corner ONLY in main menu)
+        if (CFG.fontSmall != null) {
+            String napbonText = "multiplayer by Napbon";
+            CFG.glyphLayout.setText(CFG.fontSmall, napbonText);
+            int napW = (int) CFG.glyphLayout.width;
+            int napX = W - napW - CFG.s(14);
+            int napY = CFG.textTopCentered(CFG.fontSmall, H - CFG.s(26), CFG.s(20));
+
+            // Subtle drop shadow + high-tech cyan/blue text
+            CFG.drawTextSmall(this.batch, napbonText, napX + 1, napY + 1, new Color(0.0f, 0.0f, 0.0f, 0.7f * alpha));
+            CFG.drawTextSmall(this.batch, napbonText, napX, napY, new Color(0.35f, 0.82f, 1.0f, 0.85f * alpha));
+        }
+
         this.batch.end();
         this.themeReveal.captureThenSwitch(this.switchTheme);
     }
