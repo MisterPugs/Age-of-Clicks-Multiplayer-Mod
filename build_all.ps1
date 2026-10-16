@@ -22,8 +22,9 @@ $sources = Get-ChildItem -Path $srcDir -Recurse -Filter "*.java" | Select-Object
 $sourceFileList = Join-Path $buildDir "sources.txt"
 $sources | Out-File -FilePath $sourceFileList -Encoding ascii
 
-Write-Host ("Compiling {0} Java sources..." -f $sources.Count)
-$cp = ("{0};{1};{2}" -f $gameJar, $luajJar, $binDir)
+$androidJar = "C:\Users\kakas\AppData\Local\Temp\android_tools\android.jar"
+$gdxAndroidJar = "C:\Users\kakas\AppData\Local\Temp\android_tools\gdx-backend-android.jar"
+$cp = ("{0};{1};{2};{3};{4}" -f $gameJar, $luajJar, $androidJar, $gdxAndroidJar, $binDir)
 & $javac -encoding UTF-8 -cp $cp -d $binDir ("@" + $sourceFileList)
 
 if ($LASTEXITCODE -ne 0) {

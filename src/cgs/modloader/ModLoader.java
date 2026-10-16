@@ -57,20 +57,30 @@ public class ModLoader {
 
         System.out.println("[ModLoader] =======================================");
         System.out.println("[ModLoader] Initializing CGS ModLoader v1.0.0...");
-        System.out.println("[ModLoader] Game Directory: " + gameDir.getAbsolutePath());
-        System.out.println("[ModLoader] Mods Directory: " + modsDir.getAbsolutePath());
 
-        if (!modsDir.exists()) {
-            boolean created = modsDir.mkdirs();
-            System.out.println("[ModLoader] Created mods directory: " + created);
+        try {
+            if (!modsDir.exists()) {
+                modsDir.mkdirs();
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            loadConfig();
+        } catch (Throwable ignored) {}
+
+        try {
+            discoverAndLoadMods();
+        } catch (Throwable t) {
+            System.err.println("[ModLoader] Error in discoverAndLoadMods: " + t.getMessage());
         }
 
-        loadConfig();
-        discoverAndLoadMods();
+        try {
+            cgs.modloader.scripting.LuaModEngine.getInstance().reload();
+        } catch (Throwable ignored) {}
 
-        cgs.modloader.scripting.LuaModEngine.getInstance().reload();
-        cgs.modloader.resources.ModResourceManager.getInstance().scanModAssets();
-
+        try {
+            cgs.modloader.resources.ModResourceManager.getInstance().scanModAssets();
+        } catch (Throwable ignored) {}
 
         System.out.println("[ModLoader] Total active mods loaded: " + loadedMods.size());
         System.out.println("[ModLoader] =======================================");
@@ -320,6 +330,7 @@ public class ModLoader {
 
     public void onGameCreated(cgsGame game) {
         this.gameInstance = game;
+        init();
         for (ModContainer mc : loadedMods) {
             if (mc.metadata.enabled && mc.instance != null) {
                 try {
@@ -332,6 +343,7 @@ public class ModLoader {
     }
 
     public void onMainMenuBuild(MainMenuScreen screen, ModMenuHelper helper) {
+        init();
         for (ModContainer mc : loadedMods) {
             if (mc.metadata.enabled && mc.instance != null) {
                 try {

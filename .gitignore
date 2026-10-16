@@ -2,3 +2,6 @@ bin/
 *.class
 *.log
 sources.txt
+
+*.apk
+

@@ -341,7 +341,15 @@ extends ScreenAdapter {
             System.err.println("[ModLoader] Error in onMainMenuBuild: " + t.getMessage());
         }
         java.util.List<cgs.modloader.api.ModMenuHelper.ModMenuItem> modItems = modMenuHelper.getCustomButtons();
-        int rows = (this.hasSaves ? 8 : 7) + modItems.size();
+        boolean hasMpButton = false;
+        for (cgs.modloader.api.ModMenuHelper.ModMenuItem item : modItems) {
+            if (item.text != null && (item.text.contains("СЕТЕВАЯ") || item.text.toUpperCase().contains("MULTIPLAYER"))) {
+                hasMpButton = true;
+                break;
+            }
+        }
+        int totalCustomButtons = modItems.size() + (hasMpButton ? 0 : 1);
+        int rows = (this.hasSaves ? 8 : 7) + totalCustomButtons;
         int contentH = rows * this.btnH + (rows - 1) * this.gap + separatorH * 3;
         this.layoutCornerSlots(W, H);
         this.whatsNew.layout(this.panelX, 0, this.panelW, 0, W, H, true);
@@ -444,6 +452,22 @@ extends ScreenAdapter {
             ButtonElement b = this.row(btnX, y += this.btnH + this.gap, this.btnW, this.btnH, item.text, item.iconIndex, item.bgColor, item.textColor, item.onClick);
             if (item.tooltip != null) b.setTooltip(item.tooltip);
             elements.add(this.charmRow(b, "mod_" + item.text));
+        }
+
+        if (!hasMpButton) {
+            String mpLabel = LanguageManager.get("menu_multiplayer");
+            if (mpLabel == null || mpLabel.trim().isEmpty() || mpLabel.contains("?")) {
+                mpLabel = "СЕТЕВАЯ ИГРА";
+            }
+            Color btnBg = new Color(0.12f, 0.38f, 0.65f, 1.0f);
+            ButtonElement b = this.row(btnX, y += this.btnH + this.gap, this.btnW, this.btnH, mpLabel.toUpperCase(), Images.ic_menu_multiplayer, btnBg, Color.WHITE, new Runnable() {
+                @Override
+                public void run() {
+                    MainMenuScreen.this.game.showMultiplayerLobby();
+                }
+            });
+            b.setTooltip("Сетевые баталии: игра по сети до 8 игроков (LAN, Direct IP, Steam)");
+            elements.add(this.charmRow(b, "multiplayer"));
         }
 
         elements.add(this.charmRow(this.row(btnX, y += this.btnH + this.gap, this.btnW, this.btnH, LanguageManager.get("menu_editor"), Images.ic_menu_brush, CFG.COLOR_PARCHMENT_BTN_BG, CFG.COLOR_TEXT_DARK, new Runnable(){
