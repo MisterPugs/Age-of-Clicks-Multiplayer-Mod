@@ -103,9 +103,29 @@ sequenceDiagram
 - Clean bilingual modal prompt (Russian & English with official flags) upon first launch.
 - Remembers player preference permanently and automatically configures all mod menus and game text.
 
-### 📜 10. Scripting & Hot-Reload [F5]
-- Embedded Lua and JavaScript runtime (`mods/scripts/`).
-- Instant mod and UI reload via `F5` without restarting the game.
+### 📱 11. Mobile Tactical HUD (Android APK Exclusive)
+- Seamless top dock bar designed specifically for Android touch screens (`ApplicationType.Android`):
+  - `[ 💬 CHAT ]` — Toggles on-screen virtual keyboard and multiplayer chat.
+  - `[ 🤝 AID ]` — Opens Lend-Lease & troop transfer interface.
+  - `[ 🕊️ DIPLO ]` — Opens full diplomacy modal.
+  - `[ 📊 SCORE ]` — Toggles match scoreboard.
+  - `[ ⏸️ PAUSE ]` — Requests tactical timeout.
+  - `[ 📈 TIMELINE ]` — Opens post-game growth curves and ranking screen.
+- *Strictly disabled on PC to preserve classic hotkey gameplay and keep screen uncluttered.*
+
+### 🕊️ 12. Full Multiplayer Diplomacy [F8]
+- Formal Non-Aggression Pacts & Military Alliances.
+- Mutual military defense and joint war engagements.
+- Network offer proposals with bilateral Accept/Reject popup notifications.
+- Alliance dissolution and formal declaration of war.
+
+### 📈 13. Timeline & Post-Game Match Graphs [F9]
+- Multi-curve visual growth charts tracking territorial expansion and army strength throughout the campaign.
+- Match leader rankings and post-battle prestige awards (MVP Conqueror, Grand General).
+
+### ⏸️ 14. Tactical Pause & Synchronized Game Speed [Pause] / [P]
+- 45-second emergency timeout (up to 2 timeouts per player per match) with network-wide countdown banner and instant resume button.
+- Synchronized simulation speed (1x, 2x, 5x) to maintain deterministic simulation across all connected clients.
 
 ---
 
@@ -114,6 +134,9 @@ sequenceDiagram
 | Key / Shortcut | Action |
 | :--- | :--- |
 | **`F7`** | Open Direct Aid & Lend-Lease Dialog |
+| **`F8`** | Open Multiplayer Diplomacy Modal |
+| **`F9`** | Open Match Timeline & Post-Game Growth Graphs |
+| **`Pause` / `P`**| Request 45-second Tactical Pause / Vote Speed |
 | **`F6`** | Save Multiplayer Match (Host only, `saves/mp/`) |
 | **`Tab`** | Show Match Scoreboard (Treasury, Army, Ping) |
 | **`Enter` / `T`** | Open Tactical Chat |

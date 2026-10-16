@@ -65,10 +65,14 @@ public class MultiplayerMod implements IMod {
 
     @Override
     public void onRenderOverlay(SpriteBatch batch, float delta) {
-        // Live chat, tactical pings and scoreboard only during gameplay (MapScreen)
+        // Live chat, tactical pings, scoreboard, HUD, pause, diplomacy during gameplay
         com.badlogic.gdx.Screen curScreen = game != null ? game.getScreen() : null;
         if (curScreen instanceof ru.ius.david.cgs.MapScreen) {
             cgs.mods.multiplayer.chat.MultiplayerChat.getInstance().render(batch, delta, game);
+            cgs.mods.multiplayer.hud.TacticalHud.getInstance().render(batch, delta, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, game);
+            cgs.mods.multiplayer.pause.TacticalPauseManager.getInstance().renderBanner(batch, delta, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, game);
+            cgs.mods.multiplayer.diplomacy.MultiplayerDiplomacyDialog.getInstance().render(batch, CFG.fontMain, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, GameManager.getInstance(), game);
+            cgs.modloader.trade.DirectAidDialog.getInstance().render(batch, null, CFG.fontMain, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, GameManager.getInstance());
         }
 
         GameManager gm = GameManager.getInstance();
@@ -105,5 +109,10 @@ public class MultiplayerMod implements IMod {
 
             CFG.drawTextSmall(batch, text, x + pad + CFG.s(12), y + CFG.s(16), Color.WHITE);
         }
+    }
+
+    @Override
+    public void onGameTick(GameManager gm) {
+        cgs.mods.multiplayer.pause.TacticalPauseManager.getInstance().update(Gdx.graphics.getDeltaTime(), gm);
     }
 }

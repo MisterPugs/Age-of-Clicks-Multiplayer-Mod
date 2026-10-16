@@ -59,10 +59,15 @@ public class MultiplayerChat implements InputProcessor {
     private final List<MapPing> pings = Collections.synchronizedList(new ArrayList<MapPing>());
 
     private boolean isChatActive = false;
+    private boolean forceScoreboard = false;
     private StringBuilder inputBuffer = new StringBuilder();
     private boolean teamChatMode = false;
     private float keyRepeatTimer = 0.0f;
     private cgsGame currentGame = null;
+
+    public void toggleScoreboard() {
+        this.forceScoreboard = !this.forceScoreboard;
+    }
 
     // Interactive button bounding boxes (calculated each render)
     private int sendBtnX, sendBtnY, sendBtnW, sendBtnH;
@@ -207,8 +212,8 @@ public class MultiplayerChat implements InputProcessor {
         // 2. Render In-Game Chat Box
         renderChat(batch);
 
-        // 3. Render Tab Scoreboard if TAB is held
-        if (Gdx.input.isKeyPressed(Input.Keys.TAB)) {
+        // 3. Render Tab Scoreboard if TAB is held or toggled via HUD
+        if (forceScoreboard || Gdx.input.isKeyPressed(Input.Keys.TAB)) {
             renderScoreboard(batch, game);
         }
     }
@@ -535,6 +540,39 @@ public class MultiplayerChat implements InputProcessor {
             return true;
         }
 
+        if (keycode == Input.Keys.F8 && !isChatActive) {
+            cgs.mods.multiplayer.diplomacy.MultiplayerDiplomacyDialog.getInstance().open(currentGame);
+            return true;
+        }
+
+        if (keycode == Input.Keys.F9 && !isChatActive) {
+            if (currentGame != null) {
+                currentGame.setScreen(new cgs.modloader.timeline.TimelineViewerScreen(currentGame));
+            }
+            return true;
+        }
+
+        if ((keycode == Input.Keys.PAUSE || keycode == Input.Keys.P) && !isChatActive) {
+            cgs.mods.multiplayer.pause.TacticalPauseManager pm = cgs.mods.multiplayer.pause.TacticalPauseManager.getInstance();
+            if (pm.isPaused()) {
+                pm.requestResume(currentGame);
+            } else {
+                pm.requestTacticalPause(currentGame);
+            }
+            return true;
+        }
+
+        if (keycode == Input.Keys.ESCAPE && !isChatActive) {
+            if (cgs.mods.multiplayer.diplomacy.MultiplayerDiplomacyDialog.getInstance().isVisible()) {
+                cgs.mods.multiplayer.diplomacy.MultiplayerDiplomacyDialog.getInstance().close();
+                return true;
+            }
+            if (forceScoreboard) {
+                forceScoreboard = false;
+                return true;
+            }
+        }
+
         if (isChatActive) {
             if (keycode == Input.Keys.ESCAPE) {
                 isChatActive = false;
@@ -570,6 +608,23 @@ public class MultiplayerChat implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (cgs.mods.multiplayer.pause.TacticalPauseManager.getInstance().handleClick(screenX, screenY, currentGame)) {
+            return true;
+        }
+        if (cgs.mods.multiplayer.diplomacy.MultiplayerDiplomacyDialog.getInstance().handleClick(screenX, screenY, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, GameManager.getInstance(), currentGame)) {
+            return true;
+        }
+        if (cgs.modloader.trade.DirectAidDialog.getInstance().handleClick(screenX, screenY, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, GameManager.getInstance(), currentGame != null ? currentGame.getActiveMultiplayerManager() : null)) {
+            return true;
+        }
+        if (cgs.mods.multiplayer.hud.TacticalHud.getInstance().handleClick(screenX, screenY, currentGame)) {
+            return true;
+        }
+        if (forceScoreboard) {
+            forceScoreboard = false;
+            return true;
+        }
+
         if (!isChatActive) {
             // Click on mini chat trigger pill in bottom-left
             if (miniChatBtnW > 0 && screenX >= miniChatBtnX && screenX <= miniChatBtnX + miniChatBtnW &&
