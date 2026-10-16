@@ -1,0 +1,4 @@
+bin/
+*.class
+*.log
+sources.txt
