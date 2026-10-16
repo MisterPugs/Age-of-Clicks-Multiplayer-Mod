@@ -119,8 +119,62 @@ public class MultiplayerChat implements InputProcessor {
         }
     }
 
+    public ru.ius.david.cgs.ui.CGSConfirmDialog getActiveConfirmDialog() {
+        if (currentGame == null) return null;
+        com.badlogic.gdx.Screen curScreen = currentGame.getScreen();
+        if (curScreen instanceof ru.ius.david.cgs.MapScreen) {
+            ru.ius.david.cgs.MapScreen ms = (ru.ius.david.cgs.MapScreen) curScreen;
+            try {
+                // 1. MissionEventDialog confirmDialog
+                java.lang.reflect.Field medField = ru.ius.david.cgs.MapScreen.class.getDeclaredField("missionEventDialog");
+                medField.setAccessible(true);
+                Object med = medField.get(ms);
+                if (med instanceof ru.ius.david.cgs.menus.MissionEventDialog) {
+                    java.lang.reflect.Field cdField = ru.ius.david.cgs.menus.MissionEventDialog.class.getDeclaredField("confirmDialog");
+                    cdField.setAccessible(true);
+                    Object cd = cdField.get(med);
+                    if (cd instanceof ru.ius.david.cgs.ui.CGSConfirmDialog) {
+                        ru.ius.david.cgs.ui.CGSConfirmDialog dlg = (ru.ius.david.cgs.ui.CGSConfirmDialog) cd;
+                        if (dlg.isVisible()) return dlg;
+                    }
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                // 2. inGameHud confirmDialog
+                java.lang.reflect.Field hudField = ru.ius.david.cgs.MapScreen.class.getDeclaredField("inGameHud");
+                hudField.setAccessible(true);
+                Object hud = hudField.get(ms);
+                if (hud != null) {
+                    java.lang.reflect.Method getCd = hud.getClass().getMethod("getConfirmDialog");
+                    Object cd = getCd.invoke(hud);
+                    if (cd instanceof ru.ius.david.cgs.ui.CGSConfirmDialog) {
+                        ru.ius.david.cgs.ui.CGSConfirmDialog dlg = (ru.ius.david.cgs.ui.CGSConfirmDialog) cd;
+                        if (dlg.isVisible()) return dlg;
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+        return null;
+    }
+
     public void ensureInputProcessorAttached() {
         InputProcessor current = Gdx.input.getInputProcessor();
+        if (current == this) return;
+
+        // If a CGSConfirmDialog is currently showing, NEVER replace it!
+        if (current instanceof ru.ius.david.cgs.ui.CGSConfirmDialog) {
+            ru.ius.david.cgs.ui.CGSConfirmDialog cd = (ru.ius.david.cgs.ui.CGSConfirmDialog) current;
+            if (cd.isVisible()) return;
+        }
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            if (current != activeCd) {
+                Gdx.input.setInputProcessor(activeCd);
+            }
+            return;
+        }
+
         if (currentGame != null && currentGame.getScreen() instanceof ru.ius.david.cgs.MapScreen) {
             ru.ius.david.cgs.MapScreen ms = (ru.ius.david.cgs.MapScreen) currentGame.getScreen();
             try {
@@ -537,6 +591,11 @@ public class MultiplayerChat implements InputProcessor {
     // InputProcessor implementation
     @Override
     public boolean keyDown(int keycode) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.keyDown(keycode);
+        }
+
         if (keycode == Input.Keys.ENTER) {
             if (isChatActive) {
                 String text = inputBuffer.toString().trim();
@@ -627,6 +686,11 @@ public class MultiplayerChat implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.touchDown(screenX, screenY, pointer, button);
+        }
+
         com.badlogic.gdx.Screen curScreen = currentGame != null ? currentGame.getScreen() : null;
         if (curScreen instanceof ru.ius.david.cgs.MapScreen && ((ru.ius.david.cgs.MapScreen) curScreen).isCountrySelectMode()) {
             if (!isChatActive) {
@@ -711,15 +775,56 @@ public class MultiplayerChat implements InputProcessor {
     }
 
     @Override
-    public boolean keyUp(int keycode) { return isChatActive; }
+    public boolean keyUp(int keycode) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.keyUp(keycode);
+        }
+        return isChatActive;
+    }
+
     @Override
-    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) { return false; }
+    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.touchCancelled(screenX, screenY, pointer, button);
+        }
+        return false;
+    }
+
     @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) { return false; }
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.touchUp(screenX, screenY, pointer, button);
+        }
+        return false;
+    }
+
     @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) { return false; }
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.touchDragged(screenX, screenY, pointer);
+        }
+        return false;
+    }
+
     @Override
-    public boolean mouseMoved(int screenX, int screenY) { return false; }
+    public boolean mouseMoved(int screenX, int screenY) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.mouseMoved(screenX, screenY);
+        }
+        return false;
+    }
+
     @Override
-    public boolean scrolled(float amountX, float amountY) { return false; }
+    public boolean scrolled(float amountX, float amountY) {
+        ru.ius.david.cgs.ui.CGSConfirmDialog activeCd = getActiveConfirmDialog();
+        if (activeCd != null && activeCd.isVisible()) {
+            return activeCd.scrolled(amountX, amountY);
+        }
+        return false;
+    }
 }
