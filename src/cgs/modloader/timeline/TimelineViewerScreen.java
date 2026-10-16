@@ -148,19 +148,25 @@ public class TimelineViewerScreen extends ScreenAdapter {
         this.menuPanel.setVisible(true);
     }
 
+    private InputAdapter myInputAdapter = null;
+
     private void setupInput() {
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
-        this.previousInputProcessor = Gdx.input.getInputProcessor();
+        InputProcessor cur = Gdx.input.getInputProcessor();
+        if (cur != null && cur != myInputAdapter) {
+            this.previousInputProcessor = cur;
+        }
 
-        Gdx.input.setInputProcessor(new InputAdapter() {
-            @Override
-            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                // Direct fail-safe check for Close buttons (Top or Bottom)
-                if (isHit(screenX, screenY, closeTopX, closeTopY, closeTopW, closeTopH) ||
-                    isHit(screenX, screenY, closeBotX, closeBotY, closeBotW, closeBotH)) {
-                    closeScreen();
-                    return true;
-                }
+        if (myInputAdapter == null) {
+            myInputAdapter = new InputAdapter() {
+                @Override
+                public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                    // Direct fail-safe check for Close buttons (Top or Bottom)
+                    if (isHit(screenX, screenY, closeTopX, closeTopY, closeTopW, closeTopH) ||
+                        isHit(screenX, screenY, closeBotX, closeBotY, closeBotW, closeBotH)) {
+                        closeScreen();
+                        return true;
+                    }
 
                 // Direct check for Play / Pause
                 if (isHit(screenX, screenY, playBtnX, playBtnY, playBtnW, playBtnH)) {
@@ -225,7 +231,9 @@ public class TimelineViewerScreen extends ScreenAdapter {
                 }
                 return false;
             }
-        });
+        };
+        }
+        Gdx.input.setInputProcessor(myInputAdapter);
     }
 
     private boolean isHit(int x, int y, int bx, int by, int bw, int bh) {
@@ -265,10 +273,26 @@ public class TimelineViewerScreen extends ScreenAdapter {
             SoundManager.getInstance().play(SoundManager.SFX.BUTTON_CLICK);
         } catch (Throwable ignored) {}
 
+        if (this.previousInputProcessor != null) {
+            try {
+                Gdx.input.setInputProcessor(this.previousInputProcessor);
+            } catch (Throwable ignored) {}
+        }
+
         if (game == null) return;
 
         try {
             if (previousScreen != null && previousScreen != this) {
+                if (previousScreen instanceof ru.ius.david.cgs.MapScreen) {
+                    try {
+                        java.lang.reflect.Field muxField = ru.ius.david.cgs.MapScreen.class.getDeclaredField("multiplexer");
+                        muxField.setAccessible(true);
+                        com.badlogic.gdx.InputMultiplexer mux = (com.badlogic.gdx.InputMultiplexer) muxField.get(previousScreen);
+                        if (mux != null) {
+                            Gdx.input.setInputProcessor(mux);
+                        }
+                    } catch (Throwable ignored) {}
+                }
                 game.setScreen(previousScreen);
                 return;
             }

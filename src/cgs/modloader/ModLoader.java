@@ -422,7 +422,7 @@ public class ModLoader {
         }
 
         // 5. Direct Aid Dialog render & click handling (gameplay only)
-        if (mapScreen != null && cgs.modloader.trade.DirectAidDialog.getInstance().isVisible()) {
+        if (mapScreen != null && !mapScreen.isCountrySelectMode() && cgs.modloader.trade.DirectAidDialog.getInstance().isVisible()) {
             ru.ius.david.cgs.game.GameManager gm = ru.ius.david.cgs.game.GameManager.getInstance();
             ru.ius.david.cgs.multiplayer.MultiplayerManager mpMgr = this.gameInstance != null ? this.gameInstance.getActiveMultiplayerManager() : null;
             if (com.badlogic.gdx.Gdx.input.isButtonJustPressed(com.badlogic.gdx.Input.Buttons.LEFT)) {

@@ -121,6 +121,25 @@ public class MultiplayerChat implements InputProcessor {
 
     public void ensureInputProcessorAttached() {
         InputProcessor current = Gdx.input.getInputProcessor();
+        if (currentGame != null && currentGame.getScreen() instanceof ru.ius.david.cgs.MapScreen) {
+            ru.ius.david.cgs.MapScreen ms = (ru.ius.david.cgs.MapScreen) currentGame.getScreen();
+            try {
+                java.lang.reflect.Field muxField = ru.ius.david.cgs.MapScreen.class.getDeclaredField("multiplexer");
+                muxField.setAccessible(true);
+                InputMultiplexer msMux = (InputMultiplexer) muxField.get(ms);
+                if (msMux != null) {
+                    if (current != msMux) {
+                        Gdx.input.setInputProcessor(msMux);
+                        current = msMux;
+                    }
+                    if (!msMux.getProcessors().contains(this, true)) {
+                        msMux.addProcessor(0, this);
+                    }
+                    return;
+                }
+            } catch (Throwable ignored) {}
+        }
+
         if (current instanceof InputMultiplexer) {
             InputMultiplexer mux = (InputMultiplexer) current;
             if (!mux.getProcessors().contains(this, true)) {
@@ -608,6 +627,14 @@ public class MultiplayerChat implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        com.badlogic.gdx.Screen curScreen = currentGame != null ? currentGame.getScreen() : null;
+        if (curScreen instanceof ru.ius.david.cgs.MapScreen && ((ru.ius.david.cgs.MapScreen) curScreen).isCountrySelectMode()) {
+            if (!isChatActive) {
+                // Guaranteed 100% transparent pass-through for scenario map, country cards and buttons
+                return false;
+            }
+        }
+
         if (cgs.mods.multiplayer.pause.TacticalPauseManager.getInstance().handleClick(screenX, screenY, currentGame)) {
             return true;
         }

@@ -68,6 +68,11 @@ public class MultiplayerMod implements IMod {
         // Live chat, tactical pings, scoreboard, HUD, pause, diplomacy during gameplay
         com.badlogic.gdx.Screen curScreen = game != null ? game.getScreen() : null;
         if (curScreen instanceof ru.ius.david.cgs.MapScreen) {
+            ru.ius.david.cgs.MapScreen ms = (ru.ius.david.cgs.MapScreen) curScreen;
+            if (ms.isCountrySelectMode()) {
+                cgs.mods.multiplayer.chat.MultiplayerChat.getInstance().render(batch, delta, game);
+                return;
+            }
             cgs.mods.multiplayer.chat.MultiplayerChat.getInstance().render(batch, delta, game);
             cgs.mods.multiplayer.hud.TacticalHud.getInstance().render(batch, delta, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, game);
             cgs.mods.multiplayer.pause.TacticalPauseManager.getInstance().renderBanner(batch, delta, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, game);
