@@ -409,15 +409,9 @@ public class ModLoader {
             cgs.modloader.trade.DirectAidDialog.getInstance().toggle();
         }
 
-        // 5. Direct Aid Dialog render & interaction
+        // 5. Direct Aid Dialog render
         if (cgs.modloader.trade.DirectAidDialog.getInstance().isVisible()) {
             ru.ius.david.cgs.game.GameManager gm = ru.ius.david.cgs.game.GameManager.getInstance();
-            ru.ius.david.cgs.multiplayer.MultiplayerManager mpMgr = this.gameInstance != null ? this.gameInstance.getActiveMultiplayerManager() : null;
-            if (com.badlogic.gdx.Gdx.input.isButtonJustPressed(com.badlogic.gdx.Input.Buttons.LEFT)) {
-                float mx = com.badlogic.gdx.Gdx.input.getX();
-                float my = ru.ius.david.cgs.CFG.GAME_HEIGHT - com.badlogic.gdx.Gdx.input.getY();
-                cgs.modloader.trade.DirectAidDialog.getInstance().handleClick(mx, my, ru.ius.david.cgs.CFG.GAME_WIDTH, ru.ius.david.cgs.CFG.GAME_HEIGHT, gm, mpMgr);
-            }
             cgs.modloader.trade.DirectAidDialog.getInstance().render(
                 batch, null, ru.ius.david.cgs.CFG.fontMain, ru.ius.david.cgs.CFG.GAME_WIDTH, ru.ius.david.cgs.CFG.GAME_HEIGHT, gm
             );

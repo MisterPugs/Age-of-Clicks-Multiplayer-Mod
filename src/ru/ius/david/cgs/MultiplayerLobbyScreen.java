@@ -188,7 +188,7 @@ extends ScreenAdapter {
         int gap = CFG.s(16);
         int pad = CFG.s(32);
         boolean steamAvailable = SteamManager.isAvailable();
-        int totalButtons = this.steamMode ? 3 : 4;
+        int totalButtons = this.steamMode ? 4 : 5;
         this.panelW = btnW + pad * 2;
         int currentYOffset = pad;
         int tabY = 0;
@@ -264,6 +264,16 @@ extends ScreenAdapter {
                 MultiplayerLobbyScreen.this.setupInput();
             }
         }));
+
+        // Expanded Scenario Selector Button (before hosting)
+        String curScenName = this.allScenarios != null && this.selectedScenarioIndex < this.allScenarios.size() ? this.allScenarios.get((int)this.selectedScenarioIndex).name : "1936";
+        elements.add(new ButtonElement(btnX, btnY, btnW, btnH, "🗺️ СЦЕНАРИЙ: " + curScenName + " ▾", CFG.COLOR_PARCHMENT_BTN_BG, COLOR_TEXT_DARK, new Runnable(){
+            @Override
+            public void run() {
+                MultiplayerLobbyScreen.this.openScenarioSelectDialog();
+            }
+        }));
+        btnY += btnH + gap;
 
         String hostLabel = this.steamMode ? "Steam: Host" : LanguageManager.get("mp_host");
         String joinLabel = this.steamMode ? "Steam: Join" : LanguageManager.get("mp_join");
@@ -363,11 +373,11 @@ extends ScreenAdapter {
             }));
             int scenarioY = bottomRow1Y - btnH - gap;
             String scenarioName = this.allScenarios != null && this.selectedScenarioIndex < this.allScenarios.size() ? this.allScenarios.get((int)this.selectedScenarioIndex).name : "?";
-            elements.add(new ButtonElement(btnX, scenarioY, btnW, btnH, LanguageManager.format("mp_scenario", scenarioName), CFG.COLOR_PARCHMENT_BTN_BG, COLOR_TEXT_DARK, new Runnable(){
+            elements.add(new ButtonElement(btnX, scenarioY, btnW, btnH, "🗺️ " + LanguageManager.format("mp_scenario", scenarioName) + " ▾", CFG.COLOR_PARCHMENT_BTN_BG, COLOR_TEXT_DARK, new Runnable(){
 
                 @Override
                 public void run() {
-                    MultiplayerLobbyScreen.this.cycleScenario();
+                    MultiplayerLobbyScreen.this.openScenarioSelectDialog();
                 }
             }));
             if (this.steamMode && SteamManager.isAvailable()) {
@@ -408,19 +418,37 @@ extends ScreenAdapter {
                 }
             }));
 
-            String readyText = this.localReady ? "НЕ ГОТОВ" : "ГОТОВ";
-            Color readyBg = this.localReady ? COLOR_BTN_NOT_READY : COLOR_BTN_READY;
-            elements.add(new ButtonElement(btnX, bottomRow1Y, halfW, btnH, readyText, readyBg, Color.WHITE, new Runnable(){
-                @Override
-                public void run() {
-                    MultiplayerLobbyScreen.this.localReady = !MultiplayerLobbyScreen.this.localReady;
-                    if (MultiplayerLobbyScreen.this.mpManager != null) {
-                        MultiplayerLobbyScreen.this.mpManager.setReady(MultiplayerLobbyScreen.this.localReady);
-                    }
-                    MultiplayerLobbyScreen.this.buildLobbyPanel();
-                    MultiplayerLobbyScreen.this.setupInput();
+            if (this.scenarioMissingLocally) {
+                if (this.missingScenarioWorkshopId != null) {
+                    elements.add(new ButtonElement(btnX, bottomRow1Y, halfW, btnH, "⬇️ СКАЧАТЬ В STEAM", new Color(0.85f, 0.45f, 0.1f, 1.0f), Color.WHITE, new Runnable(){
+                        @Override
+                        public void run() {
+                            MultiplayerLobbyScreen.this.downloadMissingWorkshopScenario();
+                        }
+                    }));
+                } else {
+                    elements.add(new ButtonElement(btnX, bottomRow1Y, halfW, btnH, "НЕТ СЦЕНАРИЯ", COLOR_BTN_NOT_READY, Color.WHITE, new Runnable(){
+                        @Override
+                        public void run() {
+                            MultiplayerLobbyScreen.this.statusText = "Сценарий отсутствует на диске!";
+                        }
+                    }));
                 }
-            }));
+            } else {
+                String readyText = this.localReady ? "НЕ ГОТОВ" : "ГОТОВ";
+                Color readyBg = this.localReady ? COLOR_BTN_NOT_READY : COLOR_BTN_READY;
+                elements.add(new ButtonElement(btnX, bottomRow1Y, halfW, btnH, readyText, readyBg, Color.WHITE, new Runnable(){
+                    @Override
+                    public void run() {
+                        MultiplayerLobbyScreen.this.localReady = !MultiplayerLobbyScreen.this.localReady;
+                        if (MultiplayerLobbyScreen.this.mpManager != null) {
+                            MultiplayerLobbyScreen.this.mpManager.setReady(MultiplayerLobbyScreen.this.localReady);
+                        }
+                        MultiplayerLobbyScreen.this.buildLobbyPanel();
+                        MultiplayerLobbyScreen.this.setupInput();
+                    }
+                }));
+            }
             elements.add(new ButtonElement(btnX + halfW + gap, bottomRow1Y, halfW, btnH, LanguageManager.get("mp_disconnect"), COLOR_BTN_BACK, Color.WHITE, new Runnable(){
                 @Override
                 public void run() {
@@ -451,6 +479,80 @@ extends ScreenAdapter {
         }
         this.buildLobbyPanel();
         this.setupInput();
+    }
+
+    private boolean scenarioMissingLocally = false;
+    private String missingScenarioWorkshopId = null;
+
+    private void checkScenarioAvailability(String scenPath) {
+        if (scenPath == null || scenPath.isEmpty()) return;
+        String localPath = ScenarioFileResolver.localizeWorkshopPath(scenPath);
+        boolean exists = ScenarioFileResolver.hasScenarioAt(localPath);
+        if (!exists) {
+            this.scenarioMissingLocally = true;
+            boolean isWorkshop = ScenarioFileResolver.isWorkshopPath(scenPath);
+            this.missingScenarioWorkshopId = isWorkshop ? ScenarioFileResolver.workshopItemId(scenPath) : null;
+            String scenName = this.getLocalizedScenarioName(scenPath);
+            this.statusText = "⚠️ Сценарий '" + scenName + "' не установлен!";
+
+            if (isWorkshop && this.missingScenarioWorkshopId != null) {
+                if (SteamWorkshopManager.isAvailable() && SteamWorkshopManager.getSteamUGC() != null) {
+                    try {
+                        long id = Long.parseLong(this.missingScenarioWorkshopId);
+                        SteamWorkshopManager.getSteamUGC().subscribeItem(new com.codedisaster.steamworks.SteamPublishedFileID(id));
+                    } catch (Exception ignored) {}
+                }
+            }
+        } else {
+            this.scenarioMissingLocally = false;
+            this.missingScenarioWorkshopId = null;
+            this.loadCountryNames(localPath);
+        }
+    }
+
+    private void downloadMissingWorkshopScenario() {
+        if (this.missingScenarioWorkshopId != null) {
+            if (SteamWorkshopManager.isAvailable() && SteamWorkshopManager.getSteamUGC() != null) {
+                try {
+                    long id = Long.parseLong(this.missingScenarioWorkshopId);
+                    SteamWorkshopManager.getSteamUGC().subscribeItem(new com.codedisaster.steamworks.SteamPublishedFileID(id));
+                } catch (Exception ignored) {}
+            }
+            if (SteamManager.isAvailable()) {
+                SteamManager.activateGameOverlayToWebPage(SteamWorkshopManager.itemPageUrl(this.missingScenarioWorkshopId));
+            }
+            this.statusText = "⏳ Открыта Мастерская Steam. Подпишитесь, чтобы скачать сценарий.";
+            this.buildLobbyPanel();
+            this.setupInput();
+        }
+    }
+
+    public void openScenarioSelectDialog() {
+        cgs.modloader.ui.ScenarioSelectDialog.getInstance().open(
+            this.allScenarios,
+            this.selectedScenarioIndex,
+            new cgs.modloader.ui.ScenarioSelectDialog.ScenarioSelectionCallback() {
+                @Override
+                public void onScenarioSelected(int globalIndex, ScenarioData scenario) {
+                    MultiplayerLobbyScreen.this.selectedScenarioIndex = globalIndex;
+                    MultiplayerLobbyScreen.this.loadCountryNames(scenario.folderPath);
+                    if (MultiplayerLobbyScreen.this.mpManager != null && MultiplayerLobbyScreen.this.mpManager.isHost()) {
+                        NetworkProtocol.GameSettings settings = MultiplayerLobbyScreen.this.mpManager.getGameSettings();
+                        if (settings == null) {
+                            settings = new NetworkProtocol.GameSettings();
+                        }
+                        settings.scenarioPath = scenario.folderPath;
+                        MultiplayerLobbyScreen.this.mpManager.updateGameSettings(settings);
+                    }
+                    if (MultiplayerLobbyScreen.this.mode == LobbyMode.IN_LOBBY) {
+                        MultiplayerLobbyScreen.this.buildLobbyPanel();
+                    } else {
+                        MultiplayerLobbyScreen.this.buildMainMenu();
+                    }
+                    MultiplayerLobbyScreen.this.setupInput();
+                }
+            }
+        );
     }
 
     private void loadCountryNames(String scenarioPath) {
@@ -1061,7 +1163,7 @@ extends ScreenAdapter {
                 MultiplayerLobbyScreen.this.mode = LobbyMode.IN_LOBBY;
                 String scenPath = MultiplayerLobbyScreen.this.mpManager.getScenarioPath();
                 if (scenPath != null && !scenPath.isEmpty()) {
-                    MultiplayerLobbyScreen.this.loadCountryNames(scenPath);
+                    MultiplayerLobbyScreen.this.checkScenarioAvailability(scenPath);
                 }
                 MultiplayerLobbyScreen.this.buildLobbyPanel();
                 MultiplayerLobbyScreen.this.setupInput();
@@ -1081,6 +1183,9 @@ extends ScreenAdapter {
                 MultiplayerLobbyScreen.this.playerList.clear();
                 if (state.players != null) {
                     MultiplayerLobbyScreen.this.playerList.addAll(state.players);
+                }
+                if (state.scenarioPath != null && !state.scenarioPath.isEmpty()) {
+                    MultiplayerLobbyScreen.this.checkScenarioAvailability(state.scenarioPath);
                 }
             }
 
@@ -1122,6 +1227,9 @@ extends ScreenAdapter {
 
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                if (cgs.modloader.ui.ScenarioSelectDialog.getInstance().isVisible()) {
+                    return cgs.modloader.ui.ScenarioSelectDialog.getInstance().handleClick(screenX, screenY, CFG.GAME_WIDTH, CFG.GAME_HEIGHT);
+                }
                 int pad;
                 if (MultiplayerLobbyScreen.this.mode == LobbyMode.MENU) {
                     pad = CFG.s(32);
@@ -1203,6 +1311,14 @@ extends ScreenAdapter {
                         boolean isInside = screenX >= element.getPosX() && screenX < element.getPosX() + element.getWidth() && screenY >= element.getPosY() && screenY < element.getPosY() + element.getHeight();
                         element.setIsHovered(isInside);
                     }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean keyDown(int keycode) {
+                if (cgs.modloader.ui.ScenarioSelectDialog.getInstance().isVisible()) {
+                    return cgs.modloader.ui.ScenarioSelectDialog.getInstance().keyDown(keycode);
                 }
                 return false;
             }
@@ -1304,6 +1420,9 @@ extends ScreenAdapter {
         }
         if (this.textInputDialog != null && this.textInputDialog.isVisible()) {
             this.textInputDialog.draw(this.batch);
+        }
+        if (cgs.modloader.ui.ScenarioSelectDialog.getInstance().isVisible()) {
+            cgs.modloader.ui.ScenarioSelectDialog.getInstance().render(this.batch, CFG.fontMain, W, H);
         }
         this.batch.setColor(Color.WHITE);
         this.batch.end();

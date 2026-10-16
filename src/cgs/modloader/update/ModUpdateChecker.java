@@ -13,8 +13,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ModUpdateChecker {
-    public static final String CURRENT_VERSION = "1.1.0";
-    public static final int CURRENT_VERSION_CODE = 110;
+    public static final String CURRENT_VERSION = "1.2.0";
+    public static final int CURRENT_VERSION_CODE = 120;
     public static final String GITHUB_REPO = "MisterPugs/Age-of-Clicks-Multiplayer-Mod";
     public static final String VERSION_URL = "https://raw.githubusercontent.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/main/version.json";
     public static final String RELEASES_URL = "https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest";
