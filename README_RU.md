@@ -12,13 +12,16 @@
 
 [![Release](https://img.shields.io/badge/Release-v1.2.0-cyan?style=for-the-badge&logo=github)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)
 [![Steam Compatible](https://img.shields.io/badge/Steam-Multiplayer%20Ready-blue?style=for-the-badge&logo=steam)](https://store.steampowered.com/app/4804480/Age_of_Clicks/)
+[![Android APK](https://img.shields.io/badge/Android-APK%20Готов-green?style=for-the-badge&logo=android)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)
 [![Players](https://img.shields.io/badge/Players-2--8%20Online-brightgreen?style=for-the-badge)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod)
 [![Build](https://img.shields.io/badge/Build-Passing-emerald?style=for-the-badge)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod)
 
 **Масштабная сетевая модификация для гранд-стратегии *Age of Clicks*:**  
-*Битвы по сети до 8 игроков, синхронизация сценариев мастерской Steam, ленд-лиз, ядерная тревога DEFCON 1, тактический чат, пинги и сетевые сохранения.*
+*Битвы по сети до 8 игроков, синхронизация сценариев мастерской Steam, ленд-лиз, ядерная тревога DEFCON 1, тактический чат, пинги и сетевые сохранения. Полный кросс-плей между ПК и Android!*
 
-[📥 Скачать архив мода (v1.2.0)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest) • [🎮 Возможности](#-основные-возможности) • [⌨️ Управление](#️-горячие-клавиши) • [📦 Быстрая установка](#-быстрая-установка)
+[ 🇷🇺 Читать на русском языке ](README_RU.md) • [ 🇬🇧 Read in English ](README.md)
+
+[📥 Скачать мод для ПК (v1.2.0 ZIP)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest) • [📱 Скачать Android клиент (.apk)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest) • [🎮 Возможности](#-основные-возможности) • [📦 Быстрая установка](#-быстрая-установка)
 
 </div>
 
@@ -119,10 +122,16 @@ sequenceDiagram
 
 ## 📦 Быстрая установка
 
+### 💻 ПК (Steam):
 1. Перейдите в раздел **[Releases](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)** и скачайте архив `Age_of_Clicks_Multiplayer_Mod.zip`.
 2. В клиенте Steam нажмите правой кнопкой мыши по **Age of Clicks** ➔ **Управление** ➔ **Просмотреть локальные файлы**.
 3. Распакуйте папки `app` и `mods` из скачанного архива прямо в корень игры (с подтверждением замены файлов).
 4. Запустите игру через Steam как обычно — в главном меню появится кнопка **«СЕТЕВАЯ ИГРА»**!
+
+### 📱 Android (Кросс-плей с ПК):
+1. Скачайте файл `Age_of_Clicks_Multiplayer_v1.2.0.apk` из раздела **[Releases](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)**.
+2. Установите `.apk` на смартфон или планшет Android (при необходимости разрешите установку из внешних источников).
+3. Запустите игру — сетевой мод уже встроен в клиент! Подключайтесь к друзьям по локальной сети Wi-Fi / Direct IP или играйте через VPN / мобильную точку доступа.
 
 ---
 
