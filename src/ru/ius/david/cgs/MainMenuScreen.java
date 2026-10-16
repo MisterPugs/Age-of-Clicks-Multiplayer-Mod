@@ -897,6 +897,9 @@ extends ScreenAdapter {
 
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                if (cgs.modloader.ui.FirstLaunchLanguageDialog.getInstance().isVisible()) {
+                    return cgs.modloader.ui.FirstLaunchLanguageDialog.getInstance().handleClick(screenX, screenY, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, MainMenuScreen.this);
+                }
                 if (cgs.modloader.update.ModUpdateChecker.getInstance().handleClick(screenX, CFG.GAME_HEIGHT - screenY, CFG.GAME_WIDTH, CFG.GAME_HEIGHT)) {
                     return true;
                 }
@@ -1136,6 +1139,7 @@ extends ScreenAdapter {
     @Override
     public void show() {
         this.setupInput();
+        cgs.modloader.ui.FirstLaunchLanguageDialog.getInstance().checkFirstLaunch();
         cgs.modloader.update.ModUpdateChecker.getInstance().checkForUpdatesAsync();
         if (this.charmBoard == null) {
             this.charmBoard = new CharmBoard(new CharmBoard.DeletePrompt(){
@@ -2031,6 +2035,9 @@ extends ScreenAdapter {
             CFG.drawTextSmall(this.batch, napbonText, napX, napY, new Color(0.35f, 0.82f, 1.0f, 0.85f * alpha));
         }
 
+        // Beautiful Language Selection Dialog on First Launch
+        cgs.modloader.ui.FirstLaunchLanguageDialog.getInstance().render(this.batch, CFG.fontMain, CFG.fontSmall, delta, W, H, this);
+
         this.batch.end();
         this.themeReveal.captureThenSwitch(this.switchTheme);
     }
@@ -2132,6 +2139,11 @@ extends ScreenAdapter {
         CFG.GAME_HEIGHT = height;
         this.themeReveal.cancel();
         this.updateUIProjection();
+        this.buildMenu();
+    }
+
+    public void reloadLanguage() {
+        this.buildCornerButtons();
         this.buildMenu();
     }
 

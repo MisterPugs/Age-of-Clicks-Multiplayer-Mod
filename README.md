@@ -8,124 +8,130 @@
 
 <img src="docs/images/game_logo.png" alt="Age of Clicks Logo" width="340" />
 
-### 🌐 ПОЛНОЦЕННЫЙ СЕТЕВОЙ МУЛЬТИПЛЕЕР И МОДЛОАДЕР ДЛЯ AGE OF CLICKS
+### 🌐 FULL-FEATURED ONLINE MULTIPLAYER & MODLOADER FOR AGE OF CLICKS
 
 [![Release](https://img.shields.io/badge/Release-v1.2.0-cyan?style=for-the-badge&logo=github)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)
 [![Steam Compatible](https://img.shields.io/badge/Steam-Multiplayer%20Ready-blue?style=for-the-badge&logo=steam)](https://store.steampowered.com/app/4804480/Age_of_Clicks/)
 [![Players](https://img.shields.io/badge/Players-2--8%20Online-brightgreen?style=for-the-badge)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod)
 [![Build](https://img.shields.io/badge/Build-Passing-emerald?style=for-the-badge)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod)
 
-**Масштабная сетевая модификация для гранд-стратегии *Age of Clicks*:**  
-*Битвы по сети до 8 игроков, синхронизация сценариев мастерской Steam, ленд-лиз, ядерная тревога DEFCON 1, тактический чат, пинги и сетевые сохранения.*
+**Extensive online multiplayer modification and modding framework for *Age of Clicks*:**  
+*Online matches up to 8 players, Steam Workshop scenario auto-sync, Lend-Lease aid, DEFCON 1 nuclear alert, tactical in-game chat, map pings, hot-reconnect, and multiplayer save system.*
 
-[📥 Скачать архив мода (v1.2.0)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest) • [🎮 Возможности](#-основные-возможности) • [⌨️ Управление](#️-горячие-клавиши) • [📦 Быстрая установка](#-быстрая-установка)
+[ 🇷🇺 Читать на русском языке ](README_RU.md) • [ 🇬🇧 Read in English ](README.md)
+
+[📥 Download Mod Release (v1.2.0)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest) • [🎮 Key Features](#-key-features) • [⌨️ Controls](#️-hotkeys--controls) • [📦 Quick Installation](#-quick-installation)
 
 </div>
 
 ---
 
-## 🏗️ Архитектура сетевой синхронизации
+## 🏗️ Network Synchronization Architecture
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Host as 👑 Хост матча
-    participant Net as ⚡ Сетевой шлюз (TCP/UDP + Steam P2P)
-    actor Client as 🎮 Подключенный игрок
-    participant Workshop as 🛠️ Мастерская Steam (UGC)
+    actor Host as 👑 Match Host
+    participant Net as ⚡ Network Gateway (TCP/UDP + Steam P2P)
+    actor Client as 🎮 Connected Player
+    participant Workshop as 🛠️ Steam Workshop (UGC)
 
-    Note over Host,Client: ФАЗА 1: Лобби и подготовка карты
-    Host->>Net: Выбор сценария (например, Workshop ID: 123456)
-    Net->>Client: Проверка наличия файлов сценария
-    alt Сценарий отсутствует у клиента
-        Client->>Workshop: Авто-подписка SteamUGC.subscribeItem(123456)
-        Workshop-->>Client: Загрузка файлов сценария в фоновом режиме
+    Note over Host,Client: PHASE 1: Lobby & Scenario Sync
+    Host->>Net: Selects scenario (e.g. Workshop Item ID: 123456)
+    Net->>Client: Verifies local scenario file integrity
+    alt Scenario missing on client machine
+        Client->>Workshop: Auto-subscribe via SteamUGC.subscribeItem(123456)
+        Workshop-->>Client: Downloads scenario in background
     end
-    Client->>Net: Подтверждение готовности [ГОТОВ ✓]
-    Host->>Net: Запуск матча (Синхронизация глобального зерна Seed)
+    Client->>Net: Confirms readiness [READY ✓]
+    Host->>Net: Starts match (Synchronizes global game Seed)
 
-    Note over Host,Client: ФАЗА 2: Активная игра
-    Host->>Net: Перемещение армий, смена режимов, дипломатия
-    Net->>Client: Трансляция дельта-пакетов в реальном времени
-    Client->>Net: Ленд-лиз [F7] (Золото + Армейские корпуса)
-    Net->>Host: Зачисление подкреплений союзнику
-    Client->>Net: Тактический пинг карты [Alt+ЛКМ / Shift+ЛКМ]
-    Net-->>Host: Отображение анимированного радара на миникарте
+    Note over Host,Client: PHASE 2: Live Gameplay
+    Host->>Net: Troop movements, regime shifts, diplomacy actions
+    Net->>Client: Real-time delta-state broadcast
+    Client->>Net: Direct Aid [F7] (Gold + Army corps transfer)
+    Net->>Host: Credits reinforcement to allied treasury/army
+    Client->>Net: Tactical map ping [Alt+LMB / Shift+LMB]
+    Net-->>Host: Displays animated radar ping on the map
 ```
 
 ---
 
-## 🚀 Основные возможности
+## 🚀 Key Features
 
-### 🌐 1. Сетевой Мультиплеер (LAN, Direct IP, Steam P2P)
-- Подключение до **8 игроков** в один матч без десинхронизаций.
-- Выделенный браузер комнат по локальной сети и поддержка прямого подключения по IP / Steam-приглашениям.
-- Хост контролирует скорость игры, исключая рассинхрон тиков симуляции.
+### 🌐 1. Online Multiplayer (LAN, Direct IP, Steam P2P)
+- Up to **8 players** in a single match without desyncs.
+- Built-in LAN room discovery browser and direct IP / Steam invite connectivity.
+- Host-controlled game speed to eliminate simulation tick discrepancies.
 
-### 🗺️ 2. Расширенный выбор сценариев и авто-докачка из Steam Workshop
-- Интерактивный диалог выбора сценариев с вкладками:
-  - 🌐 **Все сценарии**
-  - 🌟 **Официальные сценарии**
-  - 🛠️ **Steam Workshop (Мастерская)**
-- **Авто-докачка карт**: Если хост выбрал сценарий из мастерской, у клиента без этого мода появляется кнопка `[ ⬇️ СКАЧАТЬ В STEAM ]`. Нажатие автоматически подписывает игрока через `SteamUGC` и открывает страницу загрузки в оверлее Steam!
+### 🗺️ 2. Expanded Scenario Selector & Steam Workshop Auto-Download
+- Categorized scenario browser with dedicated tabs:
+  - 🌐 **All Scenarios**
+  - 🌟 **Official Scenarios**
+  - 🛠️ **Steam Workshop Maps**
+- **Automated Workshop Sync**: When the host chooses a Workshop map, clients who do not possess it receive a prominent `[ ⬇️ DOWNLOAD ON STEAM ]` button that auto-subscribes via Steam UGC and opens the item page.
 
-### 🤝 3. Сетевой Ленд-Лиз и Передача Дивизий [F7]
-- **Выбор любой державы мира** стрелками `[ ◀ ПРЕД ]` / `[ СЛЕД ▶ ]` или через всплывающий интерактивный список.
-- Фильтр отображения: `Только союзники` / `Все государства мира`.
-- Мгновенная передача золота: `+10 000 🪙`, `+50 000 🪙`, `+250 000 🪙`.
-- Прямая передислокация дивизий под управление союзного генштаба.
-- **Полная блокировка кликов сквозь меню**: карта и войска под окном помощи защищены от случайных нажатий.
+### 🤝 3. Direct Lend-Lease & Troop Transfer [F7]
+- **Target any nation worldwide** using quick arrows `[ ◀ PREV ]` / `[ NEXT ▶ ]` or the searchable country picker.
+- Toggle between `Allies Only` and `All Nations`.
+- Instant treasury donations: `+10,000 🪙`, `+50,000 🪙`, `+250,000 🪙`.
+- Instant corps transfer to allied command.
+- **Strict Anti-Click-Through**: Dialog absorbs all clicks so provinces and armies underneath are never triggered by mistake.
 
-### 💾 4. Сетевые сохранения и Hot-Reconnect [F6]
-- Хост может сохранить прогресс многопользовательской кампании в любой момент по клавише `F6` (в каталог `saves/mp/`).
-- **Защита от вылетов**: При случайном обрыве связи игрок перезаходит в матч и моментально восстанавливает контроль над своей страной.
+### 💾 4. Match Saves & Hot-Reconnect [F6]
+- Host can save multiplayer campaigns on the fly via `F6` (saved to `saves/mp/`).
+- **Disconnect Protection**: If a player loses connection or restarts, they can rejoin and immediately resume command of their country.
 
-### 🚨 5. Ядерная тревога DEFCON 1
-- При запуске межконтинентальных баллистических ракет (МБР) на экранах всех участников срабатывает сирена DEFCON 1, периметр вспыхивает красным пульсирующим предупреждением, а вверху экрана активируется тактический таймер до ядерного удара.
+### 🚨 5. DEFCON 1 Nuclear Alert System
+- When an ICBM is launched, all connected players hear the DEFCON 1 klaxon, screen edges pulse red, and a tactical countdown shows remaining seconds until nuclear impact.
 
-### 💬 6. Тактический чат с мышью и пинги по карте
-- Открытие чата на `Enter`, `T` или кликом по плашке внизу экрана.
-- **Полное управление мышью**: кнопки `[ ✉️ ОТПРАВИТЬ ]`, `[ ✖ ЗАКРЫТЬ ]`, `[ 🌐 ОБЩИЙ / 🤝 СОЮЗ ]` и клик вне окна для мгновенного закрытия без застревания в режиме набора.
-- **Пинги по карте**:
-  - `Alt + ЛКМ` — боевой маркер атаки цели с звуковым сигналом.
-  - `Shift + ЛКМ` — защитный маркер обороны рубежа.
+### 💬 6. Tactical In-Game Chat & Map Pings
+- Open chat with `Enter`, `T`, or clicking the bottom-left hud trigger.
+- **Full mouse controls**: `[ ✉️ SEND ]`, `[ ✖ CLOSE ]`, `[ 🌐 GLOBAL / 🤝 TEAM ]`, plus outside-click defocus to prevent getting trapped in typing mode.
+- **Tactical Map Pings**:
+  - `Alt + LMB` — Attack objective marker with tactical alert sound.
+  - `Shift + LMB` — Defensive rally marker for allies.
 
-### 📊 7. Сетевая таблица матча [Tab]
-- Удержание `Tab` выводит экран сводки в стиле кибер-табло: число подконтрольных регионов, численность вооружённых сил, казна, статус готовности и сетевой пинг каждого участника с идеальным центрированием строк.
+### 📊 7. In-Game Tab Scoreboard
+- Holding `Tab` displays real-time match statistics: controlled regions, armed forces, treasury, and live ping with vertically centered typography.
 
-### 👁️ 8. Режим Наблюдателя / Судьи (Spectator Mode)
-- Игроки могут занять слот зрителя в лобби, чтобы наблюдать за битвами без управления государствами (идеально для турниров и стримов).
+### 👁️ 8. Observer / Spectator Mode
+- Players can join as neutral spectators to watch matches unfold (ideal for tournaments and streaming).
 
-### 📜 9. Моддинг скриптов (Lua / JavaScript) и Hot-Reload [F5]
-- Встроенная среда выполнения Lua и JS (`mods/scripts/`).
-- Горячая перезагрузка всех модов и интерфейсов по клавише `F5` без перезапуска игры.
+### 🌍 9. First-Launch Language Selector
+- Clean bilingual modal prompt (Russian & English with official flags) upon first launch.
+- Remembers player preference permanently and automatically configures all mod menus and game text.
+
+### 📜 10. Scripting & Hot-Reload [F5]
+- Embedded Lua and JavaScript runtime (`mods/scripts/`).
+- Instant mod and UI reload via `F5` without restarting the game.
 
 ---
 
-## ⌨️ Горячие клавиши
+## ⌨️ Hotkeys & Controls
 
-| Клавиша / Комбинация | Действие |
+| Key / Shortcut | Action |
 | :--- | :--- |
-| **`F7`** | Открыть интерактивное меню Ленд-лиза и военной помощи |
-| **`F6`** | Сохранить сетевой матч (для хоста, каталог `saves/mp/`) |
-| **`Tab`** | Показать сетевую таблицу счёта, казны, армий и пинга |
-| **`Enter` / `T`** | Открыть внутриигровой тактический чат |
-| **`Alt + ЛКМ`** | Поставить атакующий маркер цели на карте для союзников |
-| **`Shift + ЛКМ`**| Поставить оборонительный маркер на карте для союзников |
-| **`F5`** | Мгновенный Hot-Reload скриптов, модов и стилей |
-| **`ESC`** | Закрыть модальные диалоги или выйти в меню паузы |
+| **`F7`** | Open Direct Aid & Lend-Lease Dialog |
+| **`F6`** | Save Multiplayer Match (Host only, `saves/mp/`) |
+| **`Tab`** | Show Match Scoreboard (Treasury, Army, Ping) |
+| **`Enter` / `T`** | Open Tactical Chat |
+| **`Alt + LMB`** | Place Attack Ping on Map |
+| **`Shift + LMB`**| Place Defense Ping on Map |
+| **`F5`** | Hot-Reload Mods and Scripts on the fly |
+| **`ESC`** | Close open dialogs or return to Pause Menu |
 
 ---
 
-## 📦 Быстрая установка
+## 📦 Quick Installation
 
-1. Перейдите в раздел **[Releases](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)** и скачайте архив `Age_of_Clicks_Multiplayer_Mod.zip`.
-2. В клиенте Steam нажмите правой кнопкой мыши по **Age of Clicks** ➔ **Управление** ➔ **Просмотреть локальные файлы**.
-3. Распакуйте папки `app` и `mods` из скачанного архива прямо в корень игры (с подтверждением замены файлов).
-4. Запустите игру через Steam как обычно — в главном меню появится кнопка **«СЕТЕВАЯ ИГРА»**!
+1. Navigate to **[Releases](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)** and download `Age_of_Clicks_Multiplayer_Mod.zip`.
+2. In your Steam Library, right-click **Age of Clicks** ➔ **Manage** ➔ **Browse local files**.
+3. Extract `app` and `mods` folders from the zip directly into the game root directory (overwrite existing files when prompted).
+4. Launch the game via Steam — the **"MULTIPLAYER"** button will appear on the main menu!
 
 ---
 
 <div align="center">
-  <b>Age of Clicks Multiplayer Mod</b> • Создано сообществом для стратегов
+  <b>Age of Clicks Multiplayer Mod</b> • Built for strategists worldwide
 </div>
