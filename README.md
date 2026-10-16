@@ -2,26 +2,24 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-v1.2.0-cyan?style=for-the-badge)
-![Game](https://img.shields.io/badge/Age%20of%20Clicks-Steam%20Compatible-blue?style=for-the-badge)
-![Multiplayer](https://img.shields.io/badge/Multiplayer-2--8%20Players-brightgreen?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)
-![Status](https://img.shields.io/badge/Build-Passing-emerald?style=for-the-badge)
+<img src="docs/images/hero_banner.jpg" alt="Age of Clicks Multiplayer Mod" width="100%" style="border-radius: 10px; border: 2px solid #00e5ff; box-shadow: 0 0 35px rgba(0,229,255,0.45);" />
 
-**Монументальная сетевая модификация и модульный загрузчик для гранд-стратегии *Age of Clicks*.**  
-*Полноценный сетевой режим, синхронизация карт мастерской Steam, ленд-лиз, тактический чат, ядерная тревога DEFCON 1 и хот-реконнект.*
+<br/><br/>
 
-[📥 Скачать релиз v1.2.0](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest) • [🎮 Возможности](#-основные-возможности) • [⌨️ Управление](#️-горячие-клавиши) • [📦 Установка](#-установка-для-игроков)
+<img src="docs/images/game_logo.png" alt="Age of Clicks Logo" width="340" />
 
-</div>
+### 🌐 ПОЛНОЦЕННЫЙ СЕТЕВОЙ МУЛЬТИПЛЕЕР И МОДЛОАДЕР ДЛЯ AGE OF CLICKS
 
----
+[![Release](https://img.shields.io/badge/Release-v1.2.0-cyan?style=for-the-badge&logo=github)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)
+[![Steam Compatible](https://img.shields.io/badge/Steam-Multiplayer%20Ready-blue?style=for-the-badge&logo=steam)](https://store.steampowered.com/app/4804480/Age_of_Clicks/)
+[![Players](https://img.shields.io/badge/Players-2--8%20Online-brightgreen?style=for-the-badge)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod)
+[![Build](https://img.shields.io/badge/Build-Passing-emerald?style=for-the-badge)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod)
 
-## 📸 Демонстрация игрового процесса
+**Масштабная сетевая модификация для гранд-стратегии *Age of Clicks*:**  
+*Битвы по сети до 8 игроков, синхронизация сценариев мастерской Steam, ленд-лиз, ядерная тревога DEFCON 1, тактический чат, пинги и сетевые сохранения.*
 
-<div align="center">
-  <img src="docs/images/gameplay_demo.png" alt="Age of Clicks Multiplayer Gameplay" width="900" style="border: 2px solid #00e5ff; border-radius: 8px; box-shadow: 0 0 20px rgba(0,229,255,0.4);" />
-  <p><i>Интерфейс гранд-стратегии с интеграцией сетевого лобби, тактических пингов, чата и системы помощи союзникам</i></p>
+[📥 Скачать архив мода (v1.2.0)](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest) • [🎮 Возможности](#-основные-возможности) • [⌨️ Управление](#️-горячие-клавиши) • [📦 Быстрая установка](#-быстрая-установка)
+
 </div>
 
 ---
@@ -32,7 +30,7 @@
 sequenceDiagram
     autonumber
     actor Host as 👑 Хост матча
-    participant Net as ⚡ Сетевой шлюз (TCP/UDP + Steam)
+    participant Net as ⚡ Сетевой шлюз (TCP/UDP + Steam P2P)
     actor Client as 🎮 Подключенный игрок
     participant Workshop as 🛠️ Мастерская Steam (UGC)
 
@@ -64,7 +62,7 @@ sequenceDiagram
 - Выделенный браузер комнат по локальной сети и поддержка прямого подключения по IP / Steam-приглашениям.
 - Хост контролирует скорость игры, исключая рассинхрон тиков симуляции.
 
-### 🗺️ 2. Расширенный выбор сценариев и авто-скачивание из Steam Workshop
+### 🗺️ 2. Расширенный выбор сценариев и авто-докачка из Steam Workshop
 - Интерактивный диалог выбора сценариев с вкладками:
   - 🌐 **Все сценарии**
   - 🌟 **Официальные сценарии**
@@ -85,21 +83,21 @@ sequenceDiagram
 ### 🚨 5. Ядерная тревога DEFCON 1
 - При запуске межконтинентальных баллистических ракет (МБР) на экранах всех участников срабатывает сирена DEFCON 1, периметр вспыхивает красным пульсирующим предупреждением, а вверху экрана активируется тактический таймер до ядерного удара.
 
-### 💬 6. Тактический чат и пинги по карте
-- Открытие чата на `Enter` или `T` (общение с союзниками или глобальный канал).
+### 💬 6. Тактический чат с мышью и пинги по карте
+- Открытие чата на `Enter`, `T` или кликом по плашке внизу экрана.
+- **Полное управление мышью**: кнопки `[ ✉️ ОТПРАВИТЬ ]`, `[ ✖ ЗАКРЫТЬ ]`, `[ 🌐 ОБЩИЙ / 🤝 СОЮЗ ]` и клик вне окна для мгновенного закрытия без застревания в режиме набора.
 - **Пинги по карте**:
   - `Alt + ЛКМ` — боевой маркер атаки цели с звуковым сигналом.
   - `Shift + ЛКМ` — защитный маркер обороны рубежа.
 
 ### 📊 7. Сетевая таблица матча [Tab]
-- Удержание `Tab` выводит экран сводки в стиле кибер-табло: число подконтрольных регионов, численность вооружённых сил, казна, доход, статус готовности и сетевой пинг каждого участника.
+- Удержание `Tab` выводит экран сводки в стиле кибер-табло: число подконтрольных регионов, численность вооружённых сил, казна, статус готовности и сетевой пинг каждого участника с идеальным центрированием строк.
 
 ### 👁️ 8. Режим Наблюдателя / Судьи (Spectator Mode)
 - Игроки могут занять слот зрителя в лобби, чтобы наблюдать за битвами без управления государствами (идеально для турниров и стримов).
 
 ### 📜 9. Моддинг скриптов (Lua / JavaScript) и Hot-Reload [F5]
 - Встроенная среда выполнения Lua и JS (`mods/scripts/`).
-- Поддержка перехвата игровых событий (объявление войн, захват столиц, торговля).
 - Горячая перезагрузка всех модов и интерфейсов по клавише `F5` без перезапуска игры.
 
 ---
@@ -119,28 +117,12 @@ sequenceDiagram
 
 ---
 
-## 📦 Установка для игроков
+## 📦 Быстрая установка
 
 1. Перейдите в раздел **[Releases](https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod/releases/latest)** и скачайте архив `Age_of_Clicks_Multiplayer_Mod.zip`.
 2. В клиенте Steam нажмите правой кнопкой мыши по **Age of Clicks** ➔ **Управление** ➔ **Просмотреть локальные файлы**.
 3. Распакуйте папки `app` и `mods` из скачанного архива прямо в корень игры (с подтверждением замены файлов).
 4. Запустите игру через Steam как обычно — в главном меню появится кнопка **«СЕТЕВАЯ ИГРА»**!
-
----
-
-## 🛠️ Сборка из исходников для разработчиков
-
-```powershell
-# Клонирование репозитория
-git clone https://github.com/MisterPugs/Age-of-Clicks-Multiplayer-Mod.git
-cd Age-of-Clicks-Multiplayer-Mod
-
-# Компиляция JAR-модулей
-powershell -ExecutionPolicy Bypass -File .\build_all.ps1
-
-# Сборка готового ZIP-архива для распространения
-powershell -ExecutionPolicy Bypass -File .\package_for_friend.ps1
-```
 
 ---
 
