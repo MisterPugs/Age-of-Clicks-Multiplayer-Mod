@@ -55,6 +55,23 @@ public class FirstLaunchLanguageDialog {
     }
 
     public void checkFirstLaunch() {
+        // Sanitize legacy "RUS" / "ENG" in SettingsManager if present
+        try {
+            SettingsManager sm = SettingsManager.getInstance();
+            if (sm != null) {
+                String cur = sm.getLanguage();
+                if ("RUS".equalsIgnoreCase(cur)) {
+                    sm.setLanguage("RU");
+                    sm.setLanguageIndex(0);
+                    sm.save();
+                } else if ("ENG".equalsIgnoreCase(cur)) {
+                    sm.setLanguage("EN");
+                    sm.setLanguageIndex(1);
+                    sm.save();
+                }
+            }
+        } catch (Exception ignored) {}
+
         if (!hasSelectedLanguage()) {
             show();
         }
@@ -80,13 +97,13 @@ public class FirstLaunchLanguageDialog {
 
         // Click Russian Card
         if (mouseX >= card1X && mouseX <= card1X + cardW && mouseY >= cardY && mouseY <= cardY + cardH) {
-            selectLanguage("RUS", mainMenu);
+            selectLanguage("RU", mainMenu);
             return true;
         }
 
         // Click English Card
         if (mouseX >= card2X && mouseX <= card2X + cardW && mouseY >= cardY && mouseY <= cardY + cardH) {
-            selectLanguage("ENG", mainMenu);
+            selectLanguage("EN", mainMenu);
             return true;
         }
 
@@ -97,10 +114,12 @@ public class FirstLaunchLanguageDialog {
     private void selectLanguage(String lang, MainMenuScreen mainMenu) {
         playClickSound();
 
+        int langIndex = "EN".equalsIgnoreCase(lang) ? 1 : 0;
         try {
             SettingsManager sm = SettingsManager.getInstance();
             if (sm != null) {
                 sm.setLanguage(lang);
+                sm.setLanguageIndex(langIndex);
                 sm.setLanguageSet(true);
                 sm.save();
             }
@@ -108,6 +127,8 @@ public class FirstLaunchLanguageDialog {
             if (lm != null) {
                 lm.init();
             }
+            CFG.init();
+            CFG.loadFontMain();
         } catch (Exception e) {
             Gdx.app.log("FirstLaunchLanguageDialog", "Error applying language: " + e.getMessage());
         }
@@ -122,7 +143,14 @@ public class FirstLaunchLanguageDialog {
         this.visible = false;
 
         if (mainMenu != null) {
-            mainMenu.reloadLanguage();
+            try {
+                mainMenu.reloadLanguage();
+            } catch (Exception ignored) {}
+            try {
+                if (mainMenu.getGame() != null) {
+                    mainMenu.getGame().recreateScreens();
+                }
+            } catch (Exception ignored) {}
         }
     }
 

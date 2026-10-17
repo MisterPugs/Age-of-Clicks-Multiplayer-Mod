@@ -35,11 +35,15 @@ public class MultiplayerMod implements IMod {
 
     @Override
     public void onMainMenuBuild(final MainMenuScreen screen, ModMenuHelper helper) {
+        boolean isRus = LanguageManager.getLangSuffix().equalsIgnoreCase("Rus");
         String label = LanguageManager.get("menu_multiplayer");
-        if (label == null || label.trim().isEmpty() || label.contains("")) {
-            label = "СЕТЕВАЯ ИГРА";
+        if (label == null || label.trim().isEmpty()) {
+            label = isRus ? "СЕТЕВАЯ ИГРА" : "MULTIPLAYER";
         }
         label = label.toUpperCase();
+
+        String tooltip = isRus ? "Сетевые баталии: игра по сети до 8 игроков (LAN, Direct IP, Steam)"
+                               : "Multiplayer battles: up to 8 players online (LAN, Direct IP, Steam)";
 
         // Styled cyber-blue button matching Age of Clicks aesthetic
         Color btnBg = new Color(0.12f, 0.38f, 0.65f, 1.0f);
@@ -59,7 +63,7 @@ public class MultiplayerMod implements IMod {
                     }
                 }
             },
-            "Сетевые баталии: игра по сети до 8 игроков (LAN, Direct IP, Steam)"
+            tooltip
         );
     }
 
@@ -93,9 +97,9 @@ public class MultiplayerMod implements IMod {
             MultiplayerManager mpMgr = game != null ? game.getActiveMultiplayerManager() : null;
             int ping = (mpMgr != null) ? (int)mpMgr.getDisplayPingMs() : 0;
             String pingStr = ping > 0 ? (ping + " ms") : "OK";
-            String roleStr = gm.isHostInMultiplayer() ? "ХОСТ" : "КЛИЕНТ";
-
-            String text = "🌐 СЕТЬ: " + roleStr + " | ПИНГ: " + pingStr;
+            boolean isRus = LanguageManager.getLangSuffix().equalsIgnoreCase("Rus");
+            String roleStr = gm.isHostInMultiplayer() ? (isRus ? "ХОСТ" : "HOST") : (isRus ? "КЛИЕНТ" : "CLIENT");
+            String text = "🌐 " + (isRus ? "СЕТЬ: " : "NET: ") + roleStr + (isRus ? " | ПИНГ: " : " | PING: ") + pingStr;
 
             int textW = (int)CFG.glyphLayout.width;
             CFG.glyphLayout.setText(CFG.fontSmall, text);
